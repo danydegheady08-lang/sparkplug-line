@@ -128,8 +128,6 @@ add("barchart", "Why plugs are rejected (count by reason)", 14, 9, 10, 8,
         '  |> rename(columns: {_value: "Rejects"})\n'
         '  |> sort(columns: ["Rejects"], desc: true)',
     defaults={"color": {"mode": "fixed", "fixedColor": "#C9A96E"}},
-    overrides=[{"matcher": {"id": "byName", "options": "Rejects"},
-                "properties": [{"id": "custom.axisPlacement", "value": "hidden"}]}],
     options={"orientation": "horizontal", "xField": "reason", "showValue": "always",
              "legend": {"showLegend": False}, "barWidth": 0.7})
 
@@ -142,10 +140,7 @@ add("barchart", "Scrap cost by station", 0, 17, 8, 8,
         '  |> keep(columns: ["station", "_value"])\n'
         '  |> rename(columns: {_value: "Scrap EUR"})\n'
         '  |> sort(columns: ["Scrap EUR"], desc: true)',
-    defaults={"unit": "prefix:€", "decimals": 2, "color": {"mode": "fixed", "fixedColor": "#B5594B"},
-              },
-    overrides=[{"matcher": {"id": "byName", "options": "Scrap EUR"},
-                "properties": [{"id": "custom.axisPlacement", "value": "hidden"}]}],
+    defaults={"unit": "prefix:€", "decimals": 0, "color": {"mode": "fixed", "fixedColor": "#B5594B"}},
     options={"orientation": "horizontal", "xField": "station", "showValue": "always",
              "legend": {"showLegend": False}, "barWidth": 0.7})
 
@@ -248,7 +243,7 @@ dashboard = {
     "tags": ["sparkplug", "advanced-programming"],
     "timezone": "browser",
     "schemaVersion": 39,
-    "version": 3,
+    "version": 4,
     "editable": True,
     "refresh": "10s",
     "time": {"from": "now-9h", "to": "now"},

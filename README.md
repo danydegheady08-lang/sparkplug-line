@@ -1,94 +1,107 @@
 # Spark Plug Production Line SP1
 
-Final project for **Advanced Programming** (SRH Hochschule Berlin), Dany Degheady.
+Simulation of a make-to-order production line for spark plugs, with a Python back end, an operator screen (HMI), InfluxDB as time series database and a Grafana dashboard.
 
-A simulated make-to-order line that produces spark plugs for business customers who sell them under their own brand. Seven stations, a Python back end that decides when and why a plug is defective, a Tkinter operator screen, InfluxDB as the time series store and a Grafana dashboard that is set up automatically.
+Final project for **Advanced Programming**, Applied Mechatronics, SRH University Berlin.
+Author: Dany Degheady. Project website: [danydegheady08-lang.github.io](https://danydegheady08-lang.github.io/projects.html#final-project)
 
-Three layers go beyond the required parts:
+![Operator screen while the line is running](docs/screenshots/hmi_running.png)
 
-- **Money**: every rejected part has a scrap cost, every customer order has a margin, and the line reports a full OEE (availability, performance, quality).
-- **Predictive maintenance (CMMS)**: tool wear is counted per station, work orders are planned before a tool fails and carried out at the next order changeover.
-- **Lot traceability**: every shipped plug is linked to the material batches it contains, so a supplier problem can be traced to the customers who received the affected plugs.
+## Contents
+
+- [Overview](#overview)
+- [The line](#the-line)
+- [Quick start](#quick-start)
+- [Operator screen](#operator-screen)
+- [Dashboard](#dashboard)
+- [Maintenance experiment](#maintenance-experiment)
+- [Traceability](#traceability)
+- [Project structure](#project-structure)
+- [Tests](#tests)
+- [Limitations](#limitations)
+- [Use of AI](#use-of-ai)
+
+## Overview
+
+| Requirement | Implementation |
+|---|---|
+| Back end in Python, marks defective products and why | Seven stations, each with a check and a reason code; every reject is stored with station, time, measured value and scrap cost |
+| HMI with Start, Stop, Reset, state and error display | Tkinter operator screen with alarm banner, fault handling and repair cycle |
+| Database | InfluxDB 2.7, one point per second per line and station, plus one per event |
+| Dashboard | Grafana 11 with 18 panels, provisioned automatically, station selection variable |
+
+Optional modules, extended:
+
+- **Quality control and cost:** scrap cost per rejected part, margin per customer order, full OEE (availability, performance, quality).
+- **CMMS:** predictive and corrective maintenance work orders driven by tool wear.
+- **Traceability:** every shipped plug is linked to its material batches and its customer, stored in SQLite for recall queries.
 
 ## The line
 
-```
-1 Shell ------------> [bin] --> 4 Ground electrode --> [bin] --+
-2 Insulator --------> [bin] -----------------------------------+--> 5 Assembly --> [bin] --> 6 Final QC --> [bin] --> 7 Packaging --> customer order
-3 Center electrode -> [bin] -----------------------------------+
-```
+![Line concept](docs/screenshots/line_concept.png)
 
-| # | Station | Check | Reject reason | Scrap cost |
-|---|---|---|---|---|
-| 1 | Shell | thread diameter 13.97 +/- 0.05 mm | `THREAD_OUT_OF_TOLERANCE` | 0.35 EUR |
-| 2 | Insulator | no crack after sintering | `CRACKED_INSULATOR` | 0.30 EUR |
-| 3 | Center electrode | length at least 18.85 mm | `ELECTRODE_TOO_SHORT` | 0.15 EUR |
-| 4 | Ground electrode | weld holds, gap pre-set within 0.15 mm | `WELD_FAILURE`, `GAP_PRESET_OUT_OF_RANGE` | 0.45 EUR |
-| 5 | Assembly | seal tight | `SEAL_LEAK` | 1.05 EUR |
-| 6 | Final QC | gap 0.80 +/- 0.05 mm | `GAP_OUT_OF_TOLERANCE` | 1.10 EUR |
-| 7 | Packaging | count matches the order | | |
+| # | Station | Check | Reason code | Scrap cost |
+|---|---|---|---|---:|
+| 1 | Shell | Thread diameter 13.97 ± 0.05 mm | `THREAD_OUT_OF_TOLERANCE` | 0.35 EUR |
+| 2 | Insulator | No crack after sintering | `CRACKED_INSULATOR` | 0.30 EUR |
+| 3 | Center electrode | Length at least 18.85 mm | `ELECTRODE_TOO_SHORT` | 0.15 EUR |
+| 4 | Ground electrode | Weld holds, gap pre-set within 0.15 mm | `WELD_FAILURE`, `GAP_PRESET_OUT_OF_RANGE` | 0.45 EUR |
+| 5 | Assembly | Seal tight | `SEAL_LEAK` | 1.05 EUR |
+| 6 | Final QC | Gap 0.80 ± 0.05 mm | `GAP_OUT_OF_TOLERANCE` | 1.10 EUR |
+| 7 | Packaging | Count matches the order | | |
 
-Tool wear raises the defect rate: a worn cutting tool shifts the thread diameter, a worn weld tip scatters the gap and makes weld failures more likely. That is the link between maintenance, quality and money.
+Buffers of twelve parts sit between the stations, so a breakdown upstream starves the stations after it. Tool wear increases the defect rate and the breakdown risk, which links quality, maintenance and cost. All parameters (cycle times, tolerances, costs, wear) are in [`sparkplug/config.py`](sparkplug/config.py); prices and costs are assumptions.
 
-## Project structure
+## Quick start
 
-```
-sparkplug/            the back end (no drawing code, no database client inside the logic)
-  config.py           every number: cycle times, tolerances, costs, wear, customers
-  line.py             stations, bins, line states (Running, Stopped, Faulted, Repairing, Maintenance)
-  quality.py          one check per station, returns the reject reason
-  maintenance.py      CMMS: predictive and corrective work orders
-  economics.py        customer orders, margin, OEE
-  traceability.py     SQLite store for plugs, rejects, orders and work orders; recall query
-  telemetry.py        writes the line to InfluxDB (line protocol)
-hmi.py                operator screen (Tkinter)
-run_headless.py       runs a shift without a window, optionally into InfluxDB
-recall.py             traceability queries from the command line
-experiment.py         predictive vs reactive maintenance over many shifts
-docker/               InfluxDB + Grafana with provisioned data source and dashboard
-tests/                23 pytest tests
-```
-
-## Run it (Windows PowerShell)
+Requirements: Python 3.10 or newer, Docker Desktop (only for the dashboard).
 
 ```powershell
 pip install -r requirements.txt
 
-# 1. database and dashboard (stop the Grafana lab first if it is still running)
+# database and dashboard
 cd docker
 docker compose up -d
 cd ..
 
-# 2. fill InfluxDB with an 8 hour shift that ends now
+# fill InfluxDB with an eight hour shift that ends now
 python run_headless.py --influx
 
-# 3. open http://localhost:3000  (admin / admin), dashboard "Spark Plug Line SP1"
+# open http://localhost:3000 (admin / admin), dashboard "Spark Plug Line SP1"
 
-# 4. operate the line live, every second goes to InfluxDB as well
+# operate the line live; every second is also sent to InfluxDB
 python hmi.py --influx --speed 10x
 ```
 
-Without Docker everything except the dashboard still works: `python hmi.py`, `python run_headless.py`.
+Without Docker, the simulation, the HMI and the reports work on their own: `python hmi.py` or `python run_headless.py`.
 
-### Traceability
+| Command | Purpose |
+|---|---|
+| `python hmi.py [--influx] [--speed 30x]` | Operator screen |
+| `python run_headless.py [--hours 8] [--strategy reactive] [--influx]` | Simulate a shift and print a report |
+| `python recall.py CER-0004` | Customers affected by a material batch |
+| `python experiment.py [--sweep]` | Compare maintenance strategies |
+| `python -m pytest -q` | Run the tests |
 
-```powershell
-python recall.py --list              # material batches in shipped plugs
-python recall.py CER-0004            # which customers received plugs with ceramic batch CER-0004
-python recall.py --lot LOT-0003      # which material batches are in a customer lot
-python recall.py --serial SP000123   # history of one plug
-```
+## Operator screen
 
-### Experiment: does predictive maintenance pay?
+The screen follows the high performance HMI approach of ISA-101: the normal state is grey, and colour marks only what needs attention (red fault, amber warning or blocked station, blue planned maintenance).
 
-```powershell
-python experiment.py           # 20 shifts per strategy, same random seeds
-python experiment.py --sweep   # which planning threshold earns the most
-```
+When a station breaks down, the line stops, the banner shows the station, fault code and work order, and START is refused until RESET acknowledges the alarm and starts the repair. A demo control can break any station on purpose.
 
-Result (20 shifts of 8 h, planning threshold 40 % of tool life):
+![Fault display](docs/screenshots/hmi_fault.png)
 
-| Metric | Predictive | Reactive |
+## Dashboard
+
+Grafana loads its data source and the dashboard from files at start-up ([`docker/grafana`](docker/grafana)); the dashboard is generated by [`docker/build_dashboard.py`](docker/build_dashboard.py). It shows OEE, scrap and margin, the E10 state timeline, every measured gap against its limits, rejects by reason, scrap by station, order margins, tool wear, work orders, station status, welding temperature and buffer levels.
+
+![Grafana dashboard after an eight hour shift](docs/screenshots/grafana_dashboard.png)
+
+## Maintenance experiment
+
+Both strategies run the same 20 shifts of eight hours (same random seeds). The predictive strategy services a tool at 40 % of its life, at the next order change; the reactive strategy repairs after a breakdown.
+
+| Mean of 20 shifts | Predictive | Reactive |
 |---|---:|---:|
 | Availability | 92.6 % | 74.3 % |
 | OEE | 85.1 % | 64.9 % |
@@ -96,7 +109,46 @@ Result (20 shifts of 8 h, planning threshold 40 % of tool life):
 | Plugs shipped | 4,330 | 3,892 |
 | Margin per shift | 4,288 EUR | 3,712 EUR |
 
-Predictive maintenance had the higher margin in 20 of 20 shifts. The sweep shows why the threshold is 40 % and not lower: OEE keeps rising when the line is serviced earlier, because planned maintenance does not count against OEE, but the margin falls again below 40 %.
+Predictive maintenance had the higher margin in all 20 shifts. The threshold sweep shows why it is 40 %: OEE keeps rising with earlier service because planned stops do not count against it, but the margin falls again below 40 %.
+
+![Margin and OEE against the planning threshold](docs/screenshots/maintenance_sweep.png)
+
+Raw results: [`docs/experiment_results.csv`](docs/experiment_results.csv).
+
+## Traceability
+
+Every plug records its components, their material batches (steel, ceramic, electrode wire), its measurements, customer and lot.
+
+```text
+$ python recall.py CER-0004
+Recall for CER-0004: 366 shipped plugs, 2 customer lot(s)
+  NordDrive Parts          PO-1004  LOT-0004   139 plugs  serials SP001189 .. SP001335
+  Brightline Motor Supply  PO-1005  LOT-0005   227 plugs  serials SP001336 .. SP001585
+```
+
+`python recall.py --lot LOT-0003` lists the batches in a customer lot, `python recall.py --serial SP000123` shows the history of one plug.
+
+## Project structure
+
+```text
+sparkplug/
+  config.py          all parameters: cycle times, tolerances, costs, wear, customers
+  line.py            stations, buffers, line states, faults, maintenance, orders
+  quality.py         one check per station, returns the reason code
+  maintenance.py     CMMS: predictive and corrective work orders
+  economics.py       customer orders, margin, OEE
+  traceability.py    SQLite store and recall queries
+  telemetry.py       InfluxDB writer (line protocol)
+hmi.py               operator screen (Tkinter)
+run_headless.py      shift simulation without a window
+recall.py            traceability queries
+experiment.py        maintenance strategy comparison
+docker/              InfluxDB and Grafana with provisioning
+tests/               pytest tests
+docs/                screenshots and experiment results
+```
+
+The back end contains no drawing code and no database client in its logic. Front ends only call the operator commands and read `snapshot()`, so the same simulation runs in the HMI, headless and in the tests.
 
 ## Tests
 
@@ -104,8 +156,16 @@ Predictive maintenance had the higher margin in 20 of 20 shifts. The sweep shows
 python -m pytest -q
 ```
 
-The tests force each reject reason, check the Start/Stop/Reset logic and the fault handling, the predictive work orders, the margin formula, that no plug disappears between assembly and shipping, and that a recall finds the right customers.
+23 tests cover every reject reason, the Start, Stop and Reset logic and fault handling, predictive and urgent maintenance, the margin formula, the OEE calculation, a balance check that no plug is lost between assembly and shipping, reproducibility, the temperature model and the recall query.
+
+## Limitations
+
+- Cycle times, defect rates, costs and prices are assumptions, not plant data.
+- Wear is counted in cycles; real wear would be measured, for example through vibration or motor current.
+- Scrap is charged to the order running at the time of the reject, which is approximate at an order change.
+- The HMI runs in the same process as the simulation and has no user management.
+- Credentials in `docker-compose.yml` are for local use only.
 
 ## Use of AI
 
-The code was written with Claude (Anthropic) as a pair programmer. Design decisions, the product definition and every result were checked by me; the prompts, the outputs and the corrections are documented in the appendix of the project report.
+The code was developed with Claude (Anthropic) as a programming assistant. Requirements, product definition and design decisions were mine; every result was run and checked on my machine. Prompts, outputs and corrections are documented in the appendix of the project report.

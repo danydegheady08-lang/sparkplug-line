@@ -7,7 +7,7 @@
   ],
   "timezone": "browser",
   "schemaVersion": 39,
-  "version": 3,
+  "version": 4,
   "editable": true,
   "refresh": "10s",
   "time": {
@@ -751,20 +751,7 @@
             "fixedColor": "#C9A96E"
           }
         },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Rejects"
-            },
-            "properties": [
-              {
-                "id": "custom.axisPlacement",
-                "value": "hidden"
-              }
-            ]
-          }
-        ]
+        "overrides": []
       },
       "options": {
         "orientation": "horizontal",
@@ -803,26 +790,13 @@
       "fieldConfig": {
         "defaults": {
           "unit": "prefix:\u20ac",
-          "decimals": 2,
+          "decimals": 0,
           "color": {
             "mode": "fixed",
             "fixedColor": "#B5594B"
           }
         },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Scrap EUR"
-            },
-            "properties": [
-              {
-                "id": "custom.axisPlacement",
-                "value": "hidden"
-              }
-            ]
-          }
-        ]
+        "overrides": []
       },
       "options": {
         "orientation": "horizontal",
