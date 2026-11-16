@@ -1,0 +1,1446 @@
+{
+  "uid": "sparkplug-sp1",
+  "title": "Spark Plug Line SP1",
+  "tags": [
+    "sparkplug",
+    "advanced-programming"
+  ],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 3,
+  "editable": true,
+  "refresh": "10s",
+  "time": {
+    "from": "now-9h",
+    "to": "now"
+  },
+  "templating": {
+    "list": [
+      {
+        "name": "station",
+        "label": "Station",
+        "type": "query",
+        "datasource": {
+          "type": "influxdb",
+          "uid": "influx-sparkplug"
+        },
+        "query": "import \"influxdata/influxdb/schema\"\nschema.tagValues(bucket: \"sparkplug\", tag: \"station\", predicate: (r) => r._measurement == \"station\", start: -30d)",
+        "definition": "station tag values",
+        "refresh": 2,
+        "multi": true,
+        "includeAll": true,
+        "allValue": ".*",
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "sort": 0
+      }
+    ]
+  },
+  "annotations": {
+    "list": []
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "OEE",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "influx-sparkplug"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 4,
+        "h": 4
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "influx-sparkplug"
+          },
+          "query": "from(bucket: \"sparkplug\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"line\" and r._field == \"oee\")\n  |> last()"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds",
+            "fixedColor": "#C9A96E"
+          },
+          "unit": "percentunit",
+          "decimals": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 0.65
+              },
+              {
+                "color": "green",
+                "value": 0.85
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "value",
+        "justifyMode": "center",
+        "orientation": "auto"
+      },
+      "description": "Availability x Performance x Quality since the start of the run"
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Availability",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "influx-sparkplug"
+      },
+      "gridPos": {
+        "x": 4,
+        "y": 0,
+        "w": 3,
+        "h": 4
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "influx-sparkplug"
+          },
+          "query": "from(bucket: \"sparkplug\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"line\" and r._field == \"availability\")\n  |> last()"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds",
+            "fixedColor": "#C9A96E"
+          },
+          "unit": "percentunit",
+          "decimals": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 0.65
+              },
+              {
+                "color": "green",
+                "value": 0.85
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "value",
+        "justifyMode": "center",
+        "orientation": "auto"
+      },
+      "description": ""
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Performance",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "influx-sparkplug"
+      },
+      "gridPos": {
+        "x": 7,
+        "y": 0,
+        "w": 3,
+        "h": 4
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "influx-sparkplug"
+          },
+          "query": "from(bucket: \"sparkplug\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"line\" and r._field == \"performance\")\n  |> last()"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds",
+            "fixedColor": "#C9A96E"
+          },
+          "unit": "percentunit",
+          "decimals": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 0.65
+              },
+              {
+                "color": "green",
+                "value": 0.85
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "value",
+        "justifyMode": "center",
+        "orientation": "auto"
+      },
+      "description": ""
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "Quality",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "influx-sparkplug"
+      },
+      "gridPos": {
+        "x": 10,
+        "y": 0,
+        "w": 3,
+        "h": 4
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "influx-sparkplug"
+          },
+          "query": "from(bucket: \"sparkplug\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"line\" and r._field == \"quality\")\n  |> last()"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds",
+            "fixedColor": "#C9A96E"
+          },
+          "unit": "percentunit",
+          "decimals": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 0.65
+              },
+              {
+                "color": "green",
+                "value": 0.85
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "value",
+        "justifyMode": "center",
+        "orientation": "auto"
+      },
+      "description": ""
+    },
+    {
+      "id": 5,
+      "type": "stat",
+      "title": "Plugs shipped",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "influx-sparkplug"
+      },
+      "gridPos": {
+        "x": 13,
+        "y": 0,
+        "w": 3,
+        "h": 4
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "influx-sparkplug"
+          },
+          "query": "from(bucket: \"sparkplug\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"line\" and r._field == \"parts_good\")\n  |> last()"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "#C9A96E"
+          },
+          "unit": "none",
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "value",
+        "justifyMode": "center",
+        "orientation": "auto"
+      },
+      "description": ""
+    },
+    {
+      "id": 6,
+      "type": "stat",
+      "title": "Scrap cost",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "influx-sparkplug"
+      },
+      "gridPos": {
+        "x": 16,
+        "y": 0,
+        "w": 4,
+        "h": 4
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "influx-sparkplug"
+          },
+          "query": "from(bucket: \"sparkplug\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"line\" and r._field == \"scrap_eur\")\n  |> last()"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "#C9A96E"
+          },
+          "unit": "prefix:\u20ac",
+          "decimals": 2
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "value",
+        "justifyMode": "center",
+        "orientation": "auto"
+      },
+      "description": "Value lost in rejected parts and plugs"
+    },
+    {
+      "id": 7,
+      "type": "stat",
+      "title": "Margin",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "influx-sparkplug"
+      },
+      "gridPos": {
+        "x": 20,
+        "y": 0,
+        "w": 4,
+        "h": 4
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "influx-sparkplug"
+          },
+          "query": "from(bucket: \"sparkplug\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"line\" and r._field == \"margin_eur\")\n  |> last()"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "#C9A96E"
+          },
+          "unit": "prefix:\u20ac",
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "value",
+        "justifyMode": "center",
+        "orientation": "auto"
+      },
+      "description": "price x shipped - (cost of shipped plugs + scrap)"
+    },
+    {
+      "id": 8,
+      "type": "state-timeline",
+      "title": "Line state (E10)",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "influx-sparkplug"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 4,
+        "w": 18,
+        "h": 5
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "influx-sparkplug"
+          },
+          "query": "from(bucket: \"sparkplug\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"line\" and r._field == \"state\")\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\n  |> keep(columns: [\"_time\", \"_value\"])\n  |> rename(columns: {_value: \"Line SP1\"})"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "Productive": {
+                  "color": "green",
+                  "index": 0
+                },
+                "Standby": {
+                  "color": "yellow",
+                  "index": 1
+                },
+                "Unscheduled Downtime": {
+                  "color": "red",
+                  "index": 2
+                },
+                "Scheduled Downtime": {
+                  "color": "blue",
+                  "index": 3
+                }
+              }
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#808080",
+                "value": null
+              }
+            ]
+          },
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "showValue": "never",
+        "mergeValues": true,
+        "rowHeight": 0.8,
+        "legend": {
+          "showLegend": true,
+          "displayMode": "list",
+          "placement": "bottom"
+        }
+      }
+    },
+    {
+      "id": 9,
+      "type": "gauge",
+      "title": "Current order",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "influx-sparkplug"
+      },
+      "gridPos": {
+        "x": 18,
+        "y": 4,
+        "w": 6,
+        "h": 5
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "influx-sparkplug"
+          },
+          "query": "from(bucket: \"sparkplug\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"line\" and r._field == \"order_progress\")\n  |> last()"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "min": 0,
+          "max": 1,
+          "decimals": 0,
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "#C9A96E"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#C9A96E",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdMarkers": false
+      }
+    },
+    {
+      "id": 10,
+      "type": "timeseries",
+      "title": "Electrode gap at final QC (limits 0.75 / 0.85 mm)",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "influx-sparkplug"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 9,
+        "w": 14,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "influx-sparkplug"
+          },
+          "query": "from(bucket: \"sparkplug\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"gap\" and r._field == \"gap_mm\")\n  |> keep(columns: [\"_time\", \"_value\", \"result\"])"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "suffix: mm",
+          "decimals": 2,
+          "min": 0.6,
+          "max": 1.0,
+          "custom": {
+            "drawStyle": "points",
+            "pointSize": 3,
+            "showPoints": "always",
+            "thresholdsStyle": {
+              "mode": "dashed"
+            }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 0.75
+              },
+              {
+                "color": "red",
+                "value": 0.85
+              }
+            ]
+          },
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "#5B8DEF"
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byFrameRefID",
+              "options": "A"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "${__field.labels.result}"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "fail"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "red"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "pass"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#5B8DEF"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "legend": {
+          "showLegend": true,
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      }
+    },
+    {
+      "id": 11,
+      "type": "barchart",
+      "title": "Why plugs are rejected (count by reason)",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "influx-sparkplug"
+      },
+      "gridPos": {
+        "x": 14,
+        "y": 9,
+        "w": 10,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "influx-sparkplug"
+          },
+          "query": "from(bucket: \"sparkplug\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"reject\" and r._field == \"count\")\n  |> group(columns: [\"reason\"])\n  |> sum()\n  |> group()\n  |> keep(columns: [\"reason\", \"_value\"])\n  |> rename(columns: {_value: \"Rejects\"})\n  |> sort(columns: [\"Rejects\"], desc: true)"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "#C9A96E"
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Rejects"
+            },
+            "properties": [
+              {
+                "id": "custom.axisPlacement",
+                "value": "hidden"
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "orientation": "horizontal",
+        "xField": "reason",
+        "showValue": "always",
+        "legend": {
+          "showLegend": false
+        },
+        "barWidth": 0.7
+      }
+    },
+    {
+      "id": 12,
+      "type": "barchart",
+      "title": "Scrap cost by station",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "influx-sparkplug"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 17,
+        "w": 8,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "influx-sparkplug"
+          },
+          "query": "from(bucket: \"sparkplug\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"reject\" and r._field == \"scrap_eur\")\n  |> group(columns: [\"station\"])\n  |> sum()\n  |> group()\n  |> keep(columns: [\"station\", \"_value\"])\n  |> rename(columns: {_value: \"Scrap EUR\"})\n  |> sort(columns: [\"Scrap EUR\"], desc: true)"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "prefix:\u20ac",
+          "decimals": 2,
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "#B5594B"
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Scrap EUR"
+            },
+            "properties": [
+              {
+                "id": "custom.axisPlacement",
+                "value": "hidden"
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "orientation": "horizontal",
+        "xField": "station",
+        "showValue": "always",
+        "legend": {
+          "showLegend": false
+        },
+        "barWidth": 0.7
+      }
+    },
+    {
+      "id": 13,
+      "type": "table",
+      "title": "Finished customer orders",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "influx-sparkplug"
+      },
+      "gridPos": {
+        "x": 8,
+        "y": 17,
+        "w": 16,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "influx-sparkplug"
+          },
+          "query": "from(bucket: \"sparkplug\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"order\")\n  |> pivot(rowKey: [\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n  |> group()\n  |> keep(columns: [\"_time\", \"order_id\", \"lot_id\", \"customer\", \"qty\", \"price\", \"scrap_eur\", \"margin_eur\", \"margin_pct\", \"duration_min\"])\n  |> sort(columns: [\"_time\"], desc: true)"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "_time"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Finished"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "order_id"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Order"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "lot_id"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Lot"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "customer"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Customer"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "qty"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Plugs"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "price"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Price"
+              },
+              {
+                "id": "unit",
+                "value": "prefix:\u20ac"
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "scrap_eur"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Scrap"
+              },
+              {
+                "id": "unit",
+                "value": "prefix:\u20ac"
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "margin_eur"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Margin"
+              },
+              {
+                "id": "unit",
+                "value": "prefix:\u20ac"
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "margin_pct"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Margin %"
+              },
+              {
+                "id": "unit",
+                "value": "percent"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background",
+                  "mode": "basic"
+                }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "red",
+                      "value": null
+                    },
+                    {
+                      "color": "orange",
+                      "value": 35
+                    },
+                    {
+                      "color": "green",
+                      "value": 42
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "duration_min"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Minutes"
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm"
+      }
+    },
+    {
+      "id": 14,
+      "type": "timeseries",
+      "title": "Tool wear by station ($station)",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "influx-sparkplug"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 25,
+        "w": 14,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "influx-sparkplug"
+          },
+          "query": "from(bucket: \"sparkplug\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"station\" and r._field == \"wear_pct\" and r.station =~ /^${station:regex}$/)\n  |> aggregateWindow(every: v.windowPeriod, fn: max, createEmpty: false)"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 120,
+          "decimals": 0,
+          "displayName": "${__field.labels.station}",
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "fillOpacity": 0,
+            "thresholdsStyle": {
+              "mode": "dashed"
+            }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "transparent",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 40
+              },
+              {
+                "color": "red",
+                "value": 100
+              }
+            ]
+          },
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "showLegend": true,
+          "displayMode": "list",
+          "placement": "right"
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
+      "description": "Cycles since the last service as a share of the tool life. Orange (40 %): predictive work order opens. Red: end of life."
+    },
+    {
+      "id": 15,
+      "type": "table",
+      "title": "Work orders (CMMS)",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "influx-sparkplug"
+      },
+      "gridPos": {
+        "x": 14,
+        "y": 25,
+        "w": 10,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "influx-sparkplug"
+          },
+          "query": "from(bucket: \"sparkplug\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"workorder\" and r.station =~ /^${station:regex}$/)\n  |> pivot(rowKey: [\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n  |> group()\n  |> map(fn: (r) => ({r with duration_min: r.duration_s / 60.0}))\n  |> keep(columns: [\"_time\", \"wo_id\", \"station\", \"kind\", \"reason\", \"duration_min\"])\n  |> sort(columns: [\"_time\"], desc: true)"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "_time"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Done"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "wo_id"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "WO"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "station"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Station"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "reason"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Reason"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "duration_min"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Minutes"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "kind"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Type"
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "predictive": {
+                        "color": "blue",
+                        "index": 0
+                      },
+                      "corrective": {
+                        "color": "red",
+                        "index": 1
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm"
+      }
+    },
+    {
+      "id": 16,
+      "type": "state-timeline",
+      "title": "Station status ($station)",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "influx-sparkplug"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 33,
+        "w": 14,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "influx-sparkplug"
+          },
+          "query": "from(bucket: \"sparkplug\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"station\" and r._field == \"status\" and r.station =~ /^${station:regex}$/)\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "displayName": "${__field.labels.station}",
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "Working": {
+                  "color": "green",
+                  "index": 0
+                },
+                "Starved": {
+                  "color": "yellow",
+                  "index": 1
+                },
+                "Blocked": {
+                  "color": "orange",
+                  "index": 2
+                },
+                "Stopped": {
+                  "color": "#808080",
+                  "index": 3
+                },
+                "Fault": {
+                  "color": "red",
+                  "index": 4
+                },
+                "Service": {
+                  "color": "blue",
+                  "index": 5
+                }
+              }
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#808080",
+                "value": null
+              }
+            ]
+          },
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "showValue": "never",
+        "mergeValues": true,
+        "rowHeight": 0.85,
+        "legend": {
+          "showLegend": true,
+          "displayMode": "list",
+          "placement": "bottom"
+        }
+      }
+    },
+    {
+      "id": 17,
+      "type": "timeseries",
+      "title": "Welding station temperature",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "influx-sparkplug"
+      },
+      "gridPos": {
+        "x": 14,
+        "y": 33,
+        "w": 10,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "influx-sparkplug"
+          },
+          "query": "from(bucket: \"sparkplug\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"station\" and r._field == \"temperature\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> keep(columns: [\"_time\", \"_value\"])\n  |> rename(columns: {_value: \"Ground electrode\"})"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "celsius",
+          "decimals": 1,
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "fillOpacity": 10
+          },
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "#E8833A"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "showLegend": false
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "description": "Heats up while the station welds and cools down when it stands still."
+    },
+    {
+      "id": 18,
+      "type": "timeseries",
+      "title": "Bin fill between stations ($station)",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "influx-sparkplug"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 41,
+        "w": 24,
+        "h": 7
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "influx-sparkplug"
+          },
+          "query": "from(bucket: \"sparkplug\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"station\" and r._field == \"bin_fill\" and r.station =~ /^${station:regex}$/)\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "min": 0,
+          "max": 12,
+          "decimals": 0,
+          "displayName": "after ${__field.labels.station}",
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 0
+          },
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "showLegend": true,
+          "displayMode": "list",
+          "placement": "right"
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
+      "description": "Parts waiting after each station (capacity 12). Full means the station before is blocked, empty means the one after is starved."
+    }
+  ]
+}

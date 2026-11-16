@@ -1,0 +1,38 @@
+# InfluxDB 2.7 + Grafana 11 for the spark plug line.
+# Grafana gets its data source and the dashboard automatically (provisioning),
+# so after "docker compose up -d" the dashboard is ready at http://localhost:3000
+# Stop the Grafana lab first (it uses the same ports): docker compose down in grafana_lab
+
+services:
+  influxdb:
+    image: influxdb:2.7
+    ports:
+      - "8086:8086"
+    environment:
+      DOCKER_INFLUXDB_INIT_MODE: setup
+      DOCKER_INFLUXDB_INIT_USERNAME: admin
+      DOCKER_INFLUXDB_INIT_PASSWORD: sparkplug-admin
+      DOCKER_INFLUXDB_INIT_ORG: srh
+      DOCKER_INFLUXDB_INIT_BUCKET: sparkplug
+      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: sparkplug-token
+    volumes:
+      - influx-data:/var/lib/influxdb2
+
+  grafana:
+    image: grafana/grafana:11.0.0
+    ports:
+      - "3000:3000"
+    depends_on:
+      - influxdb
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH: /var/lib/grafana/dashboards/sparkplug.json
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      - ./grafana/dashboards:/var/lib/grafana/dashboards
+      - grafana-data:/var/lib/grafana
+
+volumes:
+  influx-data:
+  grafana-data:
